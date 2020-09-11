@@ -99,7 +99,7 @@ const Profile = () => {
   function handleLogout() {
     removeCookie('access_token');
 
-    setCookie('redirect_url', '/home', {
+    setCookie('redirect_uri', '/home', {
       path: '/',
     });
   }
@@ -117,4 +117,4 @@ const Profile = () => {
 
 ## License
 
-MIT © [Nghiep](me@nghiepit.dev)
+MIT © [Nghiep](mailto:me@nghiepit.dev)

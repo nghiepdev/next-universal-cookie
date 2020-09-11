@@ -2,6 +2,5 @@
 .vscode
 .idea
 yarn-error.log
-yalc.lock
 node_modules
 bundle.js
