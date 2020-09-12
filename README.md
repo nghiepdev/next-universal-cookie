@@ -8,7 +8,7 @@
 ## Features
 
 - Easy to integration
-- For SSR, just same as [express](http://expressjs.com/en/5x/api.html#res.cookie) `res.cookie` and `res.clearCookie`
+- For Server-side Rendering, just same as [express](http://expressjs.com/en/5x/api.html#res.cookie) `res.cookie` and `res.clearCookie`
 - Hooks support, usage seems as [react-cookie](https://www.npmjs.com/package/react-cookie#usecookiesdependencies)
 - Perfect for authentication
 
@@ -20,7 +20,7 @@ yarn add next-universal-cookie
 
 ### Integration with `_app.js`
 
-Only once time, However, be aware that this will opt you out of [automatic static optimization](https://nextjs.org/docs/advanced-features/automatic-static-optimization) for your entire application.
+Only once time. However, be aware that this will opt you out of [automatic static optimization](https://nextjs.org/docs/advanced-features/automatic-static-optimization) for your entire application.
 
 ```jsx
 // pages/_app.js
@@ -33,7 +33,7 @@ const App = ({Component, pageProps}) => {
 export default withCookie(App);
 ```
 
-### Integration for each page want to use
+### Integration for per-page want to use
 
 ```jsx
 // pages/index.js
@@ -50,20 +50,29 @@ export default withCookie(Index);
 
 Reference document to `react-cookie` and `universal-cookie`.
 
-### For SSR `getInitialProps` or `getServerSideProps`
+### For Server-side Rendering `getInitialProps` or ~~`getServerSideProps`~~
 
 #### Read cookie
 
 ```jsx
-export const getServerSideProps = (ctx) => {
+Index.getInitialProps = (ctx) => {
+  const cookies = ctx.cookie.getAll();
+  const ahihi = ctx.cookie.get('ahihi');
+
+  return {};
+};
+```
+
+**Note:** The currently `getServerSideProps` not supported yet :baby:
+
+<!-- export const getServerSideProps = (ctx) => {
   const cookies = ctx.cookie.getAll();
   const ahihi = ctx.cookie.get('ahihi');
 
   return {
     props: {},
   };
-};
-```
+}; -->
 
 #### Set and delete cookie
 
