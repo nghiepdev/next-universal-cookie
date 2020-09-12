@@ -1,6 +1,6 @@
-const resolve = require('rollup-plugin-node-resolve');
-const commonjs = require('rollup-plugin-commonjs');
-const babel = require('rollup-plugin-babel');
+import resolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import babel from '@rollup/plugin-babel';
 
 module.exports = {
   input: 'index.js',
@@ -19,9 +19,16 @@ module.exports = {
   plugins: [
     resolve(),
     babel({
+      babelHelpers: 'runtime',
       exclude: 'node_modules/**',
     }),
     commonjs(),
   ],
-  external: ['react', 'cookie', 'react-cookie', 'universal-cookie'],
+  external: [
+    'react',
+    'cookie',
+    'react-cookie',
+    'universal-cookie',
+    /@babel\/runtime/,
+  ],
 };
