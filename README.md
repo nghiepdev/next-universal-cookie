@@ -20,7 +20,8 @@ yarn add next-universal-cookie
 
 ### Integration with `_app.js`
 
-Only once time. However, be aware that this will opt you out of [automatic static optimization](https://nextjs.org/docs/advanced-features/automatic-static-optimization) for your entire application.
+Only once time. However, be aware that this will opt you out of [Automatic static optimization](https://nextjs.org/docs/advanced-features/automatic-static-optimization) and [getServerSideProps (Server-side Rendering)
+](https://nextjs.org/docs/basic-features/data-fetching#getserversideprops-server-side-rendering) for your entire application.
 
 ```jsx
 // pages/_app.js
@@ -30,7 +31,7 @@ const App = ({Component, pageProps}) => {
   return <Component {...pageProps} />;
 };
 
-export default withCookie(App);
+export default withCookie()(App);
 ```
 
 ### Integration for per-page want to use
@@ -43,19 +44,21 @@ const Index = () => {
   return <div>Hello Cookie</div>;
 };
 
-export default withCookie(Index);
+export default withCookie()(Index);
 ```
 
 ## Usage
 
 Reference document to `react-cookie` and `universal-cookie`.
 
-### For Server-side Rendering `getInitialProps` or ~~`getServerSideProps`~~
+### For Server-side Rendering `getInitialProps` or `getServerSideProps`
 
 #### Read cookie
 
+#### In `getInitialProps`
+
 ```jsx
-Index.getInitialProps = (ctx) => {
+Index.getInitialProps = ctx => {
   const cookies = ctx.cookie.getAll();
   const ahihi = ctx.cookie.get('ahihi');
 
@@ -63,21 +66,29 @@ Index.getInitialProps = (ctx) => {
 };
 ```
 
-**Note:** The currently `getServerSideProps` not supported yet :baby:
+#### In `getServerSideProps`
 
-<!-- export const getServerSideProps = (ctx) => {
+```jsx
+import {withServerSideProps, withCookie} from 'next-universal-cookie';
+
+export const getServerSideProps = withServerSideProps(ctx => {
   const cookies = ctx.cookie.getAll();
   const ahihi = ctx.cookie.get('ahihi');
 
   return {
     props: {},
   };
-}; -->
+});
+
+export default withCookie({
+  isServerSide: true,
+})(Index);
+```
 
 #### Set and delete cookie
 
 ```jsx
-Index.getInitialProps = (ctx) => {
+Index.getInitialProps = ctx => {
   // Set a cookie
   ctx.res.cookie('access_token', 'my_token_base64', {
     path: '/',
@@ -96,6 +107,9 @@ Index.getInitialProps = (ctx) => {
   return {};
 };
 ```
+
+**Note:** If use `getServerSideProps` instead of `getInitialProps` for Server-side Rendering then means you have chosen `withCookie` in per-page.
+And make sure `isServerSide: true` option.
 
 ### Hooks
 
