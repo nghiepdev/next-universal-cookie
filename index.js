@@ -57,7 +57,7 @@ export const withCookie = (
       ctx.cookie = new Cookies(cookieHeader);
 
       if (ctx.res) {
-        injectResponseCookie(ctx);
+        injectResponseCookie(ctx.res);
       }
 
       let pageProps = {};
@@ -73,7 +73,7 @@ export const withCookie = (
 };
 
 export const withServerSideProps = callback => ctx => {
-  injectResponseCookie(ctx);
+  injectResponseCookie(ctx.res);
 
   ctx.cookie = new Cookies(ctx.req.headers.cookie);
 
