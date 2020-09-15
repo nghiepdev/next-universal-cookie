@@ -5,21 +5,21 @@ import {CookiesProvider} from 'react-cookie';
 
 const SET_COOKIE_HEADER = 'Set-Cookie';
 
-const injectResponseCookie = ctx => {
+export const injectResponseCookie = res => {
   // Set cookie
-  ctx.res.cookie = (...args) => {
-    ctx.res.setHeader(SET_COOKIE_HEADER, [
-      ...(ctx.res.getHeader(SET_COOKIE_HEADER) || []),
+  res.cookie = (...args) => {
+    res.setHeader(SET_COOKIE_HEADER, [
+      ...(res.getHeader(SET_COOKIE_HEADER) || []),
       serialize(...args),
     ]);
   };
 
   // Delete cookie
-  ctx.res.clearCookie = (name, option = {}) => {
-    ctx.res.setHeader(SET_COOKIE_HEADER, [
-      ...(ctx.res.getHeader(SET_COOKIE_HEADER) || []),
+  res.clearCookie = (name, option = {}) => {
+    res.setHeader(SET_COOKIE_HEADER, [
+      ...(res.getHeader(SET_COOKIE_HEADER) || []),
       serialize(name, '', {
-        expires: new Date(),
+        maxAge: -1,
         path: '/',
         ...option,
       }),
@@ -52,7 +52,7 @@ export const withCookie = (
       const ctx = isApp ? appOrPageCtx.ctx : appOrPageCtx;
       const cookieHeader = process.browser
         ? document.cookie
-        : ctx.req.headers.cookie ?? '';
+        : ctx.req.headers.cookie;
 
       ctx.cookie = new Cookies(cookieHeader);
 

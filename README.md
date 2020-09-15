@@ -3,7 +3,7 @@
 [![NPM version](https://img.shields.io/npm/v/next-universal-cookie.svg)](https://www.npmjs.com/package/next-universal-cookie)
 [![NPM yearly download](https://img.shields.io/npm/dy/next-universal-cookie.svg)](https://www.npmjs.com/package/next-universal-cookie)
 
-> 🍪 Cookie for Next.js like a pro. A react-cookie wrapper for Next.js
+> 🍪 Cookie for Next.js like a pro. A wrapper for react-cookie to Next.js
 
 ## Features
 
@@ -108,7 +108,7 @@ Index.getInitialProps = ctx => {
 };
 ```
 
-**Note:** If use `getServerSideProps` instead of `getInitialProps` for Server-side Rendering then means you have chosen `withCookie` in per-page.
+**Note:** If use `getServerSideProps` instead of `getInitialProps` for Server-side Rendering that means you have chosen `withCookie` in per-page.
 And make sure `isServerSide: true` option.
 
 ### Hooks

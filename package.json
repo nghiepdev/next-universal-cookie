@@ -1,7 +1,7 @@
 {
   "name": "next-universal-cookie",
   "version": "0.2.0",
-  "description": "🍪 Cookie for Next.js like a pro",
+  "description": "🍪 Cookie for Next.js like a pro. A wrapper for react-cookie to Next.js",
   "keywords": [
     "cookie",
     "next.js",
