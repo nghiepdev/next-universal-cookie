@@ -7,9 +7,9 @@
 
 ## Features
 
-- Easy to integration
-- For Server-side Rendering, just same as [express](http://expressjs.com/en/5x/api.html#res.cookie) `res.cookie` and `res.clearCookie`
+- Server-side Rendering support, just same as [express](http://expressjs.com/en/5x/api.html#res.cookie) `res.cookie` and `res.clearCookie`
 - Hooks support, usage seems as [react-cookie](https://www.npmjs.com/package/react-cookie#usecookiesdependencies)
+- API Routes support
 - Perfect for authentication
 
 ## Installation
@@ -20,8 +20,8 @@ yarn add next-universal-cookie
 
 ### Integration with `_app.js`
 
-Only once time. However, be aware that this will opt you out of [Automatic static optimization](https://nextjs.org/docs/advanced-features/automatic-static-optimization) and [getServerSideProps (Server-side Rendering)
-](https://nextjs.org/docs/basic-features/data-fetching#getserversideprops-server-side-rendering) for your entire application.
+Only once time. However, be aware that this will opt you out of [Automatic static optimization](https://nextjs.org/docs/advanced-features/automatic-static-optimization) and [getServerSideProps
+](https://nextjs.org/docs/basic-features/data-fetching#getserversideprops-server-side-rendering)(Server-side Rendering) for your entire application.
 
 ```jsx
 // pages/_app.js
@@ -49,13 +49,13 @@ export default withCookie()(Index);
 
 ## Usage
 
-Reference document to `react-cookie` and `universal-cookie`.
+Reference `react-cookie` and `universal-cookie` documentation.
 
 ### For Server-side Rendering `getInitialProps` or `getServerSideProps`
 
 #### Read cookie
 
-#### In `getInitialProps`
+In `getInitialProps`
 
 ```jsx
 Index.getInitialProps = ctx => {
@@ -66,7 +66,7 @@ Index.getInitialProps = ctx => {
 };
 ```
 
-#### In `getServerSideProps`
+In `getServerSideProps`
 
 ```jsx
 import {withServerSideProps, withCookie} from 'next-universal-cookie';
@@ -92,13 +92,11 @@ Index.getInitialProps = ctx => {
   // Set a cookie
   ctx.res.cookie('access_token', 'my_token_base64', {
     path: '/',
-    expires: new Date(),
   });
 
   // Set another cookie at the time
   ctx.res.cookie('refresh_token', 'my_refresh_token_base64', {
     path: '/',
-    expires: new Date(),
   });
 
   // Delete a cookie
@@ -136,6 +134,34 @@ const Profile = () => {
     </div>
   );
 };
+```
+
+### API Routes
+
+```js
+//utils/cookie.js
+import {injectResponseCookie} from 'next-universal-cookie';
+
+export const injectApiResponseCookie = handler => (req, res) => {
+  injectResponseCookie(res);
+
+  return handler(req, res);
+};
+```
+
+```js
+//pages/api/auth.js
+export default injectApiResponseCookie((req, res) => {
+  // Set cookie
+  res.cookie('my_cookie', 'my_cookie_value', {
+    path: '/',
+  });
+
+  // Delete cookie
+  res.clearCookie('i_am_cookie');
+
+  res.end('Ok!');
+});
 ```
 
 ## License
