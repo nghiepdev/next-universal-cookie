@@ -3,4 +3,4 @@
 .idea
 yarn-error.log
 node_modules
-bundle.js
+/dist

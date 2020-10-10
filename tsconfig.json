@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "CommonJS",
+    "lib": ["ESNext", "dom"],
+    "esModuleInterop": true,
+    "jsx": "react",
+    "declaration": true,
+    "outDir": "./dist",
+    "strict": true,
+    "noImplicitAny": false,
+    "removeComments": true,
+    "importHelpers": true,
+    "downlevelIteration": true
+  },
+  "include": ["index.tsx"]
+}
