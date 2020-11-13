@@ -1,4 +1,4 @@
-import {ServerResponse} from 'http';
+import {IncomingMessage, ServerResponse} from 'http';
 import React, {useRef} from 'react';
 import {
   NextPage,
@@ -6,33 +6,21 @@ import {
   GetServerSideProps,
   GetServerSidePropsContext,
 } from 'next';
-import NextApp, {AppContext} from 'next/app';
+import {AppContext} from 'next/app';
 import {serialize} from 'cookie';
-import Cookies, {CookieSetOptions} from 'universal-cookie';
+import Cookies from 'universal-cookie';
 import {CookiesProvider} from 'react-cookie';
 
-export interface NextCookiePageContext extends NextPageContext {
-  cookie: InstanceType<typeof Cookies>;
-}
-
-export interface NextCookieAppContext extends AppContext {
-  cookie: InstanceType<typeof Cookies>;
-}
-
-export interface NextCookieServerSidePropsContext
-  extends GetServerSidePropsContext {
-  cookie: InstanceType<typeof Cookies>;
-}
-
-export interface NextCookieServerResponse
-  extends InstanceType<typeof ServerResponse> {
-  cookie?: (name: string, value: any, option: CookieSetOptions) => void;
-  clearCookie?: (name: string, option: CookieSetOptions) => void;
-}
-
-export type NextCookieContext = NextCookiePageContext | NextCookieAppContext;
+import type {
+  NextCookieContext,
+  NextWithCookieIncomingMessage,
+  NextWithCookieServerResponse,
+} from './types';
 
 interface NextCookieOption {
+  /**
+   * @default false
+   */
   isServerSide: boolean;
 }
 
@@ -40,9 +28,7 @@ interface Props {
   cookieHeader: string;
 }
 
-function getDisplayName(Component: React.ComponentType<any>) {
-  return Component.displayName || Component.name || 'Component';
-}
+const SET_COOKIE_HEADER = 'Set-Cookie';
 
 function isApp(
   appOrPageCtx: AppContext | NextPageContext,
@@ -50,21 +36,29 @@ function isApp(
   return 'Component' in appOrPageCtx;
 }
 
-const SET_COOKIE_HEADER = 'Set-Cookie';
+export function injectRequestCookie(
+  req: IncomingMessage,
+): asserts req is NextWithCookieIncomingMessage {
+  (req as NextWithCookieIncomingMessage).cookies = new Cookies(
+    req.headers.cookie,
+  ).getAll();
+}
 
-export function injectResponseCookie(res: NextCookieServerResponse) {
+export function injectResponseCookie(
+  res: ServerResponse,
+): asserts res is NextWithCookieServerResponse {
   // Set cookie
-  res.cookie = (...args) => {
+  (res as NextWithCookieServerResponse).cookie = (...args) => {
     res.setHeader(SET_COOKIE_HEADER, [
-      ...(res.getHeader(SET_COOKIE_HEADER) || []),
+      ...((res.getHeader(SET_COOKIE_HEADER) as string[]) || []),
       serialize(...args),
     ]);
   };
 
   // Delete cookie
-  res.clearCookie = (name, option = {}) => {
+  (res as NextWithCookieServerResponse).clearCookie = (name, option = {}) => {
     res.setHeader(SET_COOKIE_HEADER, [
-      ...(res.getHeader(SET_COOKIE_HEADER) || []),
+      ...((res.getHeader(SET_COOKIE_HEADER) as string[]) || []),
       serialize(name, '', {
         path: '/',
         ...option,
@@ -75,7 +69,8 @@ export function injectResponseCookie(res: NextCookieServerResponse) {
 }
 
 export function withCookie(option?: NextCookieOption) {
-  return (AppOrPage: NextPage<any> | typeof NextApp) => {
+  // AppOrPage: NextPage<Props> | typeof NextApp
+  return (AppOrPage: NextPage<Props>) => {
     const {isServerSide} = option ?? {isServerSide: false};
 
     const WithCookieWrapper = (props: Props) => {
@@ -88,7 +83,7 @@ export function withCookie(option?: NextCookieOption) {
       );
     };
 
-    WithCookieWrapper.displayName = `withCookie(${getDisplayName(AppOrPage)})`;
+    WithCookieWrapper.displayName = `withCookie(${AppOrPage.displayName})`;
 
     if (!isServerSide) {
       WithCookieWrapper.getInitialProps = async (
@@ -99,9 +94,13 @@ export function withCookie(option?: NextCookieOption) {
         const cookieHeader =
           typeof window !== 'undefined'
             ? document.cookie
-            : ctx?.req?.headers.cookie!;
+            : ctx.req!.headers.cookie!;
 
         (ctx as NextCookieContext).cookie = new Cookies(cookieHeader);
+
+        if (ctx.req) {
+          injectRequestCookie(ctx.req);
+        }
 
         if (ctx.res) {
           injectResponseCookie(ctx.res);
@@ -109,7 +108,7 @@ export function withCookie(option?: NextCookieOption) {
 
         let pageProps = {};
         if (typeof AppOrPage.getInitialProps === 'function') {
-          pageProps = await AppOrPage.getInitialProps(appOrPageCtx as any);
+          pageProps = await AppOrPage.getInitialProps(appOrPageCtx as never);
         }
 
         return {...pageProps, cookieHeader};
@@ -121,10 +120,10 @@ export function withCookie(option?: NextCookieOption) {
 }
 
 export function withServerSideProps(handler: GetServerSideProps) {
-  return (ctx: NextCookieServerSidePropsContext) => {
-    injectResponseCookie(ctx.res);
+  return (ctx: GetServerSidePropsContext) => {
+    injectRequestCookie(ctx.req);
 
-    ctx.cookie = new Cookies(ctx.req.headers.cookie);
+    injectResponseCookie(ctx.res);
 
     return handler(ctx);
   };

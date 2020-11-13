@@ -7,7 +7,7 @@
 
 ## Features
 
-- Server-side Rendering support, just same as [express](http://expressjs.com/en/5x/api.html#res.cookie) `res.cookie` and `res.clearCookie`
+- Server-side Rendering support, just same as [express](http://expressjs.com/en/5x/api.html#res.cookie) `res.cookie`, `res.cookies` and `res.clearCookie`
 - Hooks support, usage seems as [react-cookie](https://www.npmjs.com/package/react-cookie#usecookiesdependencies)
 - API Routes support
 - Perfect for authentication
@@ -20,8 +20,7 @@ yarn add next-universal-cookie
 
 ### Integration with `_app.js`
 
-Only once time. However, be aware that this will opt you out of [Automatic static optimization](https://nextjs.org/docs/advanced-features/automatic-static-optimization) and [getServerSideProps
-](https://nextjs.org/docs/basic-features/data-fetching#getserversideprops-server-side-rendering)(Server-side Rendering) for your entire application.
+Only once time, you can cookie any page
 
 ```jsx
 // pages/_app.js
@@ -34,7 +33,10 @@ const App = ({Component, pageProps}) => {
 export default withCookie()(App);
 ```
 
-### Integration for per-page want to use
+**Note:** Be aware that this will opt you out of [Automatic static optimization](https://nextjs.org/docs/advanced-features/automatic-static-optimization) and [getServerSideProps
+](https://nextjs.org/docs/basic-features/data-fetching#getserversideprops-server-side-rendering)(Server-side Rendering) for your entire application.
+
+### Integration for each per-page
 
 ```jsx
 // pages/index.js
@@ -51,7 +53,7 @@ export default withCookie()(Index);
 
 Reference `react-cookie` and `universal-cookie` documentation.
 
-### For Server-side Rendering `getInitialProps` or `getServerSideProps`
+### For Server-side Rendering `getInitialProps` and `getServerSideProps`
 
 #### Read cookie
 
@@ -59,6 +61,10 @@ In `getInitialProps`
 
 ```jsx
 Index.getInitialProps = ctx => {
+  // All cookies, only avaliable server-side, use `ctx.cookie` instance instead
+  const cookies = ctx.res.cookies;
+
+  // Or
   const cookies = ctx.cookie.getAll();
   const ahihi = ctx.cookie.get('ahihi');
 
@@ -66,23 +72,23 @@ Index.getInitialProps = ctx => {
 };
 ```
 
-In `getServerSideProps`
+Or in `getServerSideProps`
 
 ```jsx
 import {withServerSideProps, withCookie} from 'next-universal-cookie';
 
-export const getServerSideProps = withServerSideProps(ctx => {
+export const getServerSideProps = ctx => {
+  // All cookies
+  const cookies = ctx.res.cookies;
+
+  // Or
   const cookies = ctx.cookie.getAll();
   const ahihi = ctx.cookie.get('ahihi');
 
   return {
     props: {},
   };
-});
-
-export default withCookie({
-  isServerSide: true,
-})(Index);
+};
 ```
 
 #### Set and delete cookie
@@ -106,8 +112,21 @@ Index.getInitialProps = ctx => {
 };
 ```
 
-**Note:** If use `getServerSideProps` instead of `getInitialProps` for Server-side Rendering that means you have chosen `withCookie` in per-page.
-And make sure `isServerSide: true` option.
+**Note:** If you are using `withCookie` in per-page and want to using cookie in `getServerSideProps` make sure `isServerSide: true` option and wrap by `withServerSideProps`.
+
+**Example:**
+
+```jsx
+import {withServerSideProps, withCookie} from 'next-universal-cookie';
+
+export const getServerSideProps = withServerSideProps(ctx => {
+  // Code
+});
+
+export default withCookie({
+  isServerSide: true,
+})(Index);
+```
 
 ### Hooks
 
@@ -152,6 +171,9 @@ export const injectApiResponseCookie = handler => (req, res) => {
 ```js
 //pages/api/auth.js
 export default injectApiResponseCookie((req, res) => {
+  // All cookies
+  const cookies = res.cookies;
+
   // Set cookie
   res.cookie('my_cookie', 'my_cookie_value', {
     path: '/',

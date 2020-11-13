@@ -10,8 +10,7 @@
     "strict": true,
     "noImplicitAny": false,
     "removeComments": true,
-    "importHelpers": true,
-    "downlevelIteration": true
+    "importHelpers": true
   },
   "include": ["index.tsx"]
 }
