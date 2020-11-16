@@ -81,10 +81,6 @@ export const getServerSideProps = ctx => {
   // All cookies
   const cookies = ctx.res.cookies;
 
-  // Or
-  const cookies = ctx.cookie.getAll();
-  const ahihi = ctx.cookie.get('ahihi');
-
   return {
     props: {},
   };
