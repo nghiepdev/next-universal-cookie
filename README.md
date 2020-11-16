@@ -7,8 +7,8 @@
 
 ## Features
 
-- Server-side Rendering support, just same as [express](http://expressjs.com/en/5x/api.html#res.cookie) `res.cookie`, `res.cookies` and `res.clearCookie`
-- Hooks support, usage seems as [react-cookie](https://www.npmjs.com/package/react-cookie#usecookiesdependencies)
+- Server-side Rendering support, just same as [express](http://expressjs.com/en/5x/api.html#res.cookie) `req.cookie`, `res.cookies` and `res.clearCookie`
+- Hooks support [react-cookie](https://www.npmjs.com/package/react-cookie#usecookiesdependencies)
 - API Routes support
 - Perfect for authentication
 
@@ -20,7 +20,7 @@ yarn add next-universal-cookie
 
 ### Integration with `_app.js`
 
-Only once time, you can cookie any page
+Only once time, you can use cookie any page
 
 ```jsx
 // pages/_app.js
