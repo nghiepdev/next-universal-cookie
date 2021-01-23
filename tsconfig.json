@@ -9,7 +9,6 @@
     "outDir": "./dist",
     "strict": true,
     "noImplicitAny": false,
-    "removeComments": true,
     "importHelpers": true
   },
   "include": ["index.tsx"]

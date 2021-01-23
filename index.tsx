@@ -1,10 +1,10 @@
 import {IncomingMessage, ServerResponse} from 'http';
-import React, {useRef} from 'react';
+import {createElement, useMemo} from 'react';
 import {
   NextPage,
   NextPageContext,
   GetServerSideProps,
-  GetServerSidePropsContext,
+  NextApiHandler,
 } from 'next';
 import {AppContext} from 'next/app';
 import {serialize} from 'cookie';
@@ -12,40 +12,35 @@ import Cookies from 'universal-cookie';
 import {CookiesProvider} from 'react-cookie';
 
 import type {
-  NextCookieContext,
+  NextCookiePageContext,
+  NextCookieServerSidePropsContext,
   NextWithCookieIncomingMessage,
   NextWithCookieServerResponse,
+  WithCookieProps,
 } from './types';
-
-interface NextCookieOption {
-  /**
-   * @default false
-   */
-  isServerSide: boolean;
-}
-
-interface Props {
-  cookieHeader: string;
-}
 
 const SET_COOKIE_HEADER = 'Set-Cookie';
 
-function isApp(
-  appOrPageCtx: AppContext | NextPageContext,
-): appOrPageCtx is AppContext {
-  return 'Component' in appOrPageCtx;
+function isNextApiHandler(
+  handler: NextApiHandler | NextPage<WithCookieProps>
+): handler is NextApiHandler {
+  return handler.length > 1;
 }
 
-export function injectRequestCookie(
-  req: IncomingMessage,
+function isApp(ctx: AppContext | NextPageContext): ctx is AppContext {
+  return 'Component' in ctx;
+}
+
+function injectRequestCookie(
+  req: IncomingMessage
 ): asserts req is NextWithCookieIncomingMessage {
   (req as NextWithCookieIncomingMessage).cookies = new Cookies(
-    req.headers.cookie,
+    req.headers.cookie
   ).getAll();
 }
 
-export function injectResponseCookie(
-  res: ServerResponse,
+function injectResponseCookie(
+  res: ServerResponse
 ): asserts res is NextWithCookieServerResponse {
   // Set cookie
   (res as NextWithCookieServerResponse).cookie = (...args) => {
@@ -56,74 +51,90 @@ export function injectResponseCookie(
   };
 
   // Delete cookie
-  (res as NextWithCookieServerResponse).clearCookie = (name, option = {}) => {
+  (res as NextWithCookieServerResponse).clearCookie = (name, options = {}) => {
     res.setHeader(SET_COOKIE_HEADER, [
       ...((res.getHeader(SET_COOKIE_HEADER) as string[]) || []),
       serialize(name, '', {
         path: '/',
-        ...option,
+        ...options,
         maxAge: -1,
       }),
     ]);
   };
 }
 
-export function withCookie(option?: NextCookieOption) {
-  // AppOrPage: NextPage<Props> | typeof NextApp
-  return (AppOrPage: NextPage<Props>) => {
-    const {isServerSide} = option ?? {isServerSide: false};
+export function applyCookie(req: IncomingMessage, res: ServerResponse) {
+  injectRequestCookie(req);
+  injectResponseCookie(res);
+}
 
-    const WithCookieWrapper = (props: Props) => {
-      const cookie = useRef(new Cookies(props.cookieHeader));
+export function withCookie(
+  handler: NextPage<WithCookieProps> | NextApiHandler
+) {
+  // Next APIs
+  if (isNextApiHandler(handler)) {
+    const withCookie: typeof handler = (req, res) => {
+      applyCookie(req, res);
 
-      return (
-        <CookiesProvider cookies={cookie.current}>
-          <AppOrPage {...props} />
-        </CookiesProvider>
-      );
+      return handler(req, res);
     };
 
-    WithCookieWrapper.displayName = `withCookie(${AppOrPage.displayName})`;
+    return withCookie;
+  }
 
-    if (!isServerSide) {
-      WithCookieWrapper.getInitialProps = async (
-        appOrPageCtx: NextCookieContext,
-      ): Promise<Props> => {
-        const ctx = isApp(appOrPageCtx) ? appOrPageCtx.ctx : appOrPageCtx;
+  // Next Pages
+  const Page = handler;
 
-        const cookieHeader =
-          typeof window !== 'undefined'
-            ? document.cookie
-            : ctx.req!.headers.cookie!;
+  const WithCookie = (props: WithCookieProps) => {
+    const cookies = useMemo(() => new Cookies(props.cookieHeader), [
+      props.cookieHeader,
+    ]);
 
-        (ctx as NextCookieContext).cookie = new Cookies(cookieHeader);
+    return createElement(
+      CookiesProvider,
+      {cookies},
+      createElement(Page, props)
+    );
+  };
 
-        if (ctx.req) {
-          injectRequestCookie(ctx.req);
-        }
+  const displayName = Page.displayName || Page.name || 'Component';
+  WithCookie.displayName = `withCookie(${displayName})`;
 
-        if (ctx.res) {
-          injectResponseCookie(ctx.res);
-        }
-
-        let pageProps = {};
-        if (typeof AppOrPage.getInitialProps === 'function') {
-          pageProps = await AppOrPage.getInitialProps(appOrPageCtx as never);
-        }
-
-        return {...pageProps, cookieHeader};
-      };
+  WithCookie.getInitialProps = async (
+    ctx: AppContext | NextCookiePageContext
+  ): Promise<WithCookieProps> => {
+    if (isApp(ctx)) {
+      throw new Error(
+        'Custom <App /> is no longer supported. Read more: https://err.sh/next.js/opt-out-auto-static-optimization'
+      );
     }
 
-    return WithCookieWrapper;
+    let pageProps = {};
+
+    const cookieHeader =
+      typeof window === 'undefined'
+        ? ctx.req!.headers.cookie ?? ''
+        : document.cookie;
+
+    ctx.cookie = new Cookies(cookieHeader);
+
+    if (ctx.req && ctx.res) {
+      applyCookie(ctx.req, ctx.res);
+    }
+
+    if (typeof Page.getInitialProps === 'function') {
+      pageProps = await Page.getInitialProps(ctx);
+    }
+
+    return {...pageProps, cookieHeader};
   };
+
+  return WithCookie;
 }
 
 export function withServerSideProps(handler: GetServerSideProps) {
-  return (ctx: GetServerSidePropsContext) => {
-    injectRequestCookie(ctx.req);
-
-    injectResponseCookie(ctx.res);
+  return (ctx: NextCookieServerSidePropsContext) => {
+    applyCookie(ctx.req, ctx.res);
 
     return handler(ctx);
   };

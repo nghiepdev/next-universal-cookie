@@ -18,81 +18,22 @@
 yarn add next-universal-cookie
 ```
 
-### Integration with `_app.js`
-
-Only once time, you can use cookie any page
-
-```jsx
-// pages/_app.js
-import {withCookie} from 'next-universal-cookie';
-
-const App = ({Component, pageProps}) => {
-  return <Component {...pageProps} />;
-};
-
-export default withCookie()(App);
-```
-
-**Note:** Be aware that this will opt you out of [Automatic static optimization](https://nextjs.org/docs/advanced-features/automatic-static-optimization) and [getServerSideProps
-](https://nextjs.org/docs/basic-features/data-fetching#getserversideprops-server-side-rendering)(Server-side Rendering) for your entire application.
-
-> This will be deprecated in the next major release!
-
-### Integration for each per-page
-
-```jsx
-// pages/index.js
-import {withCookie} from 'next-universal-cookie';
-
-const Index = () => {
-  return <div>Hello Cookie</div>;
-};
-
-export default withCookie()(Index);
-```
-
 ## Usage
 
-Reference `react-cookie` and `universal-cookie` documentation.
+**Note:** `next-universal-cookie` does not work in [Custom App](https://nextjs.org/docs/advanced-features/custom-app) since it leads to deoptimization.
 
-### For Server-side Rendering `getInitialProps` and `getServerSideProps`
+### With ~~getInitialProps~~
 
-#### Read cookie
-
-In `getInitialProps`
+**Note:** Be aware that this will opt you out of [Automatic static optimization](https://nextjs.org/docs/advanced-features/automatic-static-optimization) for your entire application.
 
 ```jsx
-Index.getInitialProps = ctx => {
-  // All cookies, only avaliable server-side, use `ctx.cookie` instance instead
-  const cookies = ctx.req.cookies;
+import {withCookie} from 'next-universal-cookie';
 
-  // Or
+Index.getInitialProps = ctx => {
+  // Available both server and client
   const cookies = ctx.cookie.getAll();
-  const ahihi = ctx.cookie.get('ahihi');
+  const accessToken = ctx.cookie.get('access_token');
 
-  return {};
-};
-```
-
-Or in `getServerSideProps`
-
-```jsx
-import {withServerSideProps, withCookie} from 'next-universal-cookie';
-
-export const getServerSideProps = ctx => {
-  // All cookies
-  const cookies = ctx.req.cookies;
-
-  return {
-    props: {},
-  };
-};
-```
-
-#### Set and delete cookie
-
-```jsx
-Index.getInitialProps = ctx => {
   // Set a cookie
   ctx.res.cookie('access_token', 'my_token_base64', {
     path: '/',
@@ -104,29 +45,47 @@ Index.getInitialProps = ctx => {
   });
 
   // Delete a cookie
-  ctx.res.clearCookie('ahihi');
+  ctx.res.clearCookie('access_token');
 
   return {};
 };
+
+export default withCookie(Index);
 ```
 
-**Note:** If you are using `withCookie` in per-page and want to using cookie in `getServerSideProps` make sure `isServerSide: true` option and wrap by `withServerSideProps`.
-
-**Example:**
+### With **getServerSideProps**
 
 ```jsx
-import {withServerSideProps, withCookie} from 'next-universal-cookie';
+import {withServerSideProps} from 'next-universal-cookie';
 
-export const getServerSideProps = withServerSideProps(ctx => {
-  // Code
+export const getServerSideProps = withServerSideProps(({req, res}) => {
+  // All cookies
+  const cookies = req.cookies;
+
+  // Set and delete same as `getInitialProps`
+
+  return {
+    props: {},
+  };
 });
-
-export default withCookie({
-  isServerSide: true,
-})(Index);
 ```
 
-### Hooks
+**Or manual**
+
+```jsx
+import {applyCookie} from 'next-universal-cookie';
+
+export const getServerSideProps = ({req, res}) => {
+  // Manual apply cookie helper
+  applyCookie(req, res);
+
+  // Usage same as the above
+};
+```
+
+### With Hooks
+
+Read more [react-cookie](https://github.com/reactivestack/cookies/tree/master/packages/react-cookie#usecookiesdependencies).
 
 ```jsx
 import {useCookies} from 'react-cookie';
@@ -156,32 +115,45 @@ const Profile = () => {
 ### API Routes
 
 ```js
-//utils/cookie.js
-import {injectResponseCookie} from 'next-universal-cookie';
+// pages/api/index.js
 
-export const injectApiResponseCookie = handler => (req, res) => {
-  injectResponseCookie(res);
+import {withCookie} from 'next-universal-cookie';
 
-  return handler(req, res);
-};
+function handler(req, res) {
+  // All cookies
+  const cookies = req.cookies;
+
+  // For set/delete cookie
+  res.cookie();
+  res.clearCookie();
+}
+
+export default withCookie(handler);
 ```
 
+**Or manual**
+
 ```js
-//pages/api/auth.js
-export default injectApiResponseCookie((req, res) => {
-  // All cookies
-  const cookies = res.cookies;
+import {applyCookie} from 'next-universal-cookie';
 
-  // Set cookie
-  res.cookie('my_cookie', 'my_cookie_value', {
-    path: '/',
-  });
+function handler(req, res) {
+  // Manual apply cookie
+  applyCookie(req, res);
 
-  // Delete cookie
-  res.clearCookie('i_am_cookie');
+  // Usage same as the above
+}
 
-  res.end('Ok!');
-});
+export default handler;
+```
+
+## API
+
+```js
+import {
+  withCookie,
+  applyCookie,
+  withServerSideProps,
+} from 'next-universal-cookie';
 ```
 
 ## License

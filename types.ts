@@ -7,12 +7,6 @@ export interface NextCookiePageContext extends NextPageContext {
   cookie: Cookies;
 }
 
-export interface NextCookieAppContext extends AppContext {
-  cookie: Cookies;
-}
-
-export type NextCookieContext = NextCookiePageContext | NextCookieAppContext;
-
 export interface NextCookieServerSidePropsContext
   extends GetServerSidePropsContext {
   cookie: Cookies;
@@ -25,4 +19,8 @@ export interface NextWithCookieIncomingMessage extends IncomingMessage {
 export interface NextWithCookieServerResponse extends ServerResponse {
   cookie: (name: string, value: any, option: CookieSetOptions) => void;
   clearCookie: (name: string, option: CookieSetOptions) => void;
+}
+
+export interface WithCookieProps {
+  cookieHeader: string;
 }
