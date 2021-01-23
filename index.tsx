@@ -1,5 +1,5 @@
 import {IncomingMessage, ServerResponse} from 'http';
-import React, {useRef} from 'react';
+import {createElement, useMemo} from 'react';
 import {
   NextPage,
   NextPageContext,
@@ -31,21 +31,21 @@ interface Props {
 const SET_COOKIE_HEADER = 'Set-Cookie';
 
 function isApp(
-  appOrPageCtx: AppContext | NextPageContext,
+  appOrPageCtx: AppContext | NextPageContext
 ): appOrPageCtx is AppContext {
   return 'Component' in appOrPageCtx;
 }
 
 export function injectRequestCookie(
-  req: IncomingMessage,
+  req: IncomingMessage
 ): asserts req is NextWithCookieIncomingMessage {
   (req as NextWithCookieIncomingMessage).cookies = new Cookies(
-    req.headers.cookie,
+    req.headers.cookie
   ).getAll();
 }
 
 export function injectResponseCookie(
-  res: ServerResponse,
+  res: ServerResponse
 ): asserts res is NextWithCookieServerResponse {
   // Set cookie
   (res as NextWithCookieServerResponse).cookie = (...args) => {
@@ -74,12 +74,14 @@ export function withCookie(option?: NextCookieOption) {
     const {isServerSide} = option ?? {isServerSide: false};
 
     const WithCookieWrapper = (props: Props) => {
-      const cookie = useRef(new Cookies(props.cookieHeader));
+      const cookies = useMemo(() => new Cookies(props.cookieHeader), [
+        props.cookieHeader,
+      ]);
 
-      return (
-        <CookiesProvider cookies={cookie.current}>
-          <AppOrPage {...props} />
-        </CookiesProvider>
+      return createElement(
+        CookiesProvider,
+        {cookies},
+        createElement(AppOrPage, props)
       );
     };
 
@@ -87,7 +89,7 @@ export function withCookie(option?: NextCookieOption) {
 
     if (!isServerSide) {
       WithCookieWrapper.getInitialProps = async (
-        appOrPageCtx: NextCookieContext,
+        appOrPageCtx: NextCookieContext
       ): Promise<Props> => {
         const ctx = isApp(appOrPageCtx) ? appOrPageCtx.ctx : appOrPageCtx;
 

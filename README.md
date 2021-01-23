@@ -12,6 +12,8 @@
 - API Routes support
 - Perfect for authentication
 
+**Note:** From the `Next.js >=9.5` the `req.cookies` built-in supported. If you are working on `>=9.5 ` you should use [react-cookie](https://www.npmjs.com/package/react-cookie#usecookiesdependencies) directly instead.
+
 ## Installation
 
 ```bash
@@ -53,7 +55,7 @@ export default withCookie()(Index);
 
 ## Usage
 
-Reference `react-cookie` and `universal-cookie` documentation.
+Reference [react-cookie](https://www.npmjs.com/package/react-cookie#usecookiesdependencies)
 
 ### For Server-side Rendering `getInitialProps` and `getServerSideProps`
 
@@ -170,7 +172,7 @@ export const injectApiResponseCookie = handler => (req, res) => {
 //pages/api/auth.js
 export default injectApiResponseCookie((req, res) => {
   // All cookies
-  const cookies = res.cookies;
+  const cookies = req.cookies;
 
   // Set cookie
   res.cookie('my_cookie', 'my_cookie_value', {
