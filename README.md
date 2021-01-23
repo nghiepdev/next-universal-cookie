@@ -7,7 +7,7 @@
 
 ## Features
 
-- Server-side Rendering support, just same as [express](http://expressjs.com/en/5x/api.html#res.cookie) `req.cookie`, `res.cookies` and `res.clearCookie`
+- Server-side Rendering support, just same as [express](http://expressjs.com/en/5x/api.html#res.cookie) `req.cookies`, `res.cookie` and `res.clearCookie`
 - Hooks support [react-cookie](https://www.npmjs.com/package/react-cookie#usecookiesdependencies)
 - API Routes support
 - Perfect for authentication
@@ -36,6 +36,8 @@ export default withCookie()(App);
 **Note:** Be aware that this will opt you out of [Automatic static optimization](https://nextjs.org/docs/advanced-features/automatic-static-optimization) and [getServerSideProps
 ](https://nextjs.org/docs/basic-features/data-fetching#getserversideprops-server-side-rendering)(Server-side Rendering) for your entire application.
 
+> This will be deprecated in the next major release!
+
 ### Integration for each per-page
 
 ```jsx
@@ -62,7 +64,7 @@ In `getInitialProps`
 ```jsx
 Index.getInitialProps = ctx => {
   // All cookies, only avaliable server-side, use `ctx.cookie` instance instead
-  const cookies = ctx.res.cookies;
+  const cookies = ctx.req.cookies;
 
   // Or
   const cookies = ctx.cookie.getAll();
@@ -79,7 +81,7 @@ import {withServerSideProps, withCookie} from 'next-universal-cookie';
 
 export const getServerSideProps = ctx => {
   // All cookies
-  const cookies = ctx.res.cookies;
+  const cookies = ctx.req.cookies;
 
   return {
     props: {},
