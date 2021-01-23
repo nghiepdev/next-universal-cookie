@@ -7,7 +7,7 @@
 
 ## Features
 
-- Server-side Rendering support, just same as [express](http://expressjs.com/en/5x/api.html#res.cookie) `req.cookies`, `res.cookie` and `res.clearCookie`
+- Server-side Rendering support, just same as [express](http://expressjs.com/en/5x/api.html#res.cookie) `res.cookie` and `res.clearCookie`
 - Hooks support [react-cookie](https://www.npmjs.com/package/react-cookie#usecookiesdependencies)
 - API Routes support
 - Perfect for authentication
@@ -20,7 +20,10 @@ yarn add next-universal-cookie
 
 ## Usage
 
-**Note:** `next-universal-cookie` does not work in [Custom App](https://nextjs.org/docs/advanced-features/custom-app) since it leads to deoptimization.
+**Note:**
+
+- `next-universal-cookie` does not work in [Custom App](https://nextjs.org/docs/advanced-features/custom-app) since it leads to deoptimization.
+- From the `Next.js >=9.5` the `req.cookies` built-in supported.
 
 ### With ~~getInitialProps~~
 
@@ -56,30 +59,11 @@ export default withCookie(Index);
 ### With **getServerSideProps**
 
 ```jsx
-import {withServerSideProps} from 'next-universal-cookie';
-
-export const getServerSideProps = withServerSideProps(({req, res}) => {
-  // All cookies
-  const cookies = req.cookies;
-
-  // Set and delete same as `getInitialProps`
-
-  return {
-    props: {},
-  };
-});
-```
-
-**Or manual**
-
-```jsx
 import {applyCookie} from 'next-universal-cookie';
 
 export const getServerSideProps = ({req, res}) => {
   // Manual apply cookie helper
   applyCookie(req, res);
-
-  // Usage same as the above
 };
 ```
 
@@ -120,9 +104,6 @@ const Profile = () => {
 import {withCookie} from 'next-universal-cookie';
 
 function handler(req, res) {
-  // All cookies
-  const cookies = req.cookies;
-
   // For set/delete cookie
   res.cookie();
   res.clearCookie();
@@ -139,8 +120,6 @@ import {applyCookie} from 'next-universal-cookie';
 function handler(req, res) {
   // Manual apply cookie
   applyCookie(req, res);
-
-  // Usage same as the above
 }
 
 export default handler;
@@ -149,11 +128,7 @@ export default handler;
 ## API
 
 ```js
-import {
-  withCookie,
-  applyCookie,
-  withServerSideProps,
-} from 'next-universal-cookie';
+import {withCookie, applyCookie} from 'next-universal-cookie';
 ```
 
 ## License

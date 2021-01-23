@@ -1,14 +1,8 @@
 import {IncomingMessage, ServerResponse} from 'http';
-import {GetServerSidePropsContext, NextPageContext} from 'next';
-import {AppContext} from 'next/app';
+import {NextPageContext} from 'next';
 import Cookies, {CookieSetOptions} from 'universal-cookie';
 
 export interface NextCookiePageContext extends NextPageContext {
-  cookie: Cookies;
-}
-
-export interface NextCookieServerSidePropsContext
-  extends GetServerSidePropsContext {
   cookie: Cookies;
 }
 
