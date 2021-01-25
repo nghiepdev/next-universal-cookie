@@ -18,3 +18,11 @@ export interface NextWithCookieServerResponse extends ServerResponse {
 export interface WithCookieProps {
   cookieHeader: string;
 }
+
+export interface NextCookieOption {
+  /**
+   * @description Set `true` while getInitialProps in use
+   * @default false
+   */
+  isLegacy: boolean;
+}

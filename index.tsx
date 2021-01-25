@@ -11,17 +11,12 @@ import type {
   NextWithCookieIncomingMessage,
   NextWithCookieServerResponse,
   WithCookieProps,
+  NextCookieOption,
 } from './types';
 
-declare function assertType<T>(value: unknown): asserts value is T;
+function assertType<T>(value: unknown): asserts value is T {}
 
 const SET_COOKIE_HEADER = 'Set-Cookie';
-
-function isNextApiHandler(
-  handler: NextApiHandler | NextPage<WithCookieProps>
-): handler is NextApiHandler {
-  return handler.length > 1;
-}
 
 function isApp(ctx: AppContext | NextPageContext): ctx is AppContext {
   return 'Component' in ctx;
@@ -72,66 +67,66 @@ export function applyCookie(req: IncomingMessage, res: ServerResponse) {
   injectResponseCookie(res);
 }
 
-export function withCookie(
-  handler: NextPage<WithCookieProps> | NextApiHandler
-) {
-  // Next APIs
-  if (isNextApiHandler(handler)) {
-    const withCookie: typeof handler = (req, res) => {
-      applyCookie(req, res);
+export function withApiCookie<T = any>(handler: NextApiHandler<T>) {
+  const withCookie: typeof handler = (req, res) => {
+    applyCookie(req, res);
 
-      return handler(req, res);
+    return handler(req, res);
+  };
+
+  return withCookie;
+}
+
+export function withCookie(option?: NextCookieOption) {
+  return (Page: NextPage<WithCookieProps>) => {
+    const {isLegacy} = option ?? {isLegacy: false};
+
+    const WithCookie = (props: WithCookieProps) => {
+      const cookies = useMemo(() => new Cookies(props.cookieHeader), [
+        props.cookieHeader,
+      ]);
+
+      return createElement(
+        CookiesProvider,
+        {cookies},
+        createElement(Page, props)
+      );
     };
 
-    return withCookie;
-  }
+    const displayName = Page.displayName || Page.name || 'Component';
+    WithCookie.displayName = `withCookie(${displayName})`;
 
-  // Next Pages
-  const Page = handler;
+    if (isLegacy === true) {
+      WithCookie.getInitialProps = async (
+        ctx: AppContext | NextCookiePageContext
+      ): Promise<WithCookieProps> => {
+        if (isApp(ctx)) {
+          throw new Error(
+            'withCookie() is no longer supported in Custom <App />. Read more: https://err.sh/next.js/opt-out-auto-static-optimization'
+          );
+        }
 
-  const WithCookie = (props: WithCookieProps) => {
-    const cookies = useMemo(() => new Cookies(props.cookieHeader), [
-      props.cookieHeader,
-    ]);
+        let pageProps = {};
 
-    return createElement(
-      CookiesProvider,
-      {cookies},
-      createElement(Page, props)
-    );
+        const cookieHeader =
+          typeof window === 'undefined'
+            ? ctx.req!.headers.cookie ?? ''
+            : document.cookie;
+
+        ctx.cookie = new Cookies(cookieHeader);
+
+        if (ctx.req && ctx.res) {
+          applyCookie(ctx.req, ctx.res);
+        }
+
+        if (typeof Page.getInitialProps === 'function') {
+          pageProps = await Page.getInitialProps(ctx);
+        }
+
+        return {...pageProps, cookieHeader};
+      };
+    }
+
+    return WithCookie;
   };
-
-  const displayName = Page.displayName || Page.name || 'Component';
-  WithCookie.displayName = `withCookie(${displayName})`;
-
-  WithCookie.getInitialProps = async (
-    ctx: AppContext | NextCookiePageContext
-  ): Promise<WithCookieProps> => {
-    if (isApp(ctx)) {
-      throw new Error(
-        'Custom <App /> is no longer supported. Read more: https://err.sh/next.js/opt-out-auto-static-optimization'
-      );
-    }
-
-    let pageProps = {};
-
-    const cookieHeader =
-      typeof window === 'undefined'
-        ? ctx.req!.headers.cookie ?? ''
-        : document.cookie;
-
-    ctx.cookie = new Cookies(cookieHeader);
-
-    if (ctx.req && ctx.res) {
-      applyCookie(ctx.req, ctx.res);
-    }
-
-    if (typeof Page.getInitialProps === 'function') {
-      pageProps = await Page.getInitialProps(ctx);
-    }
-
-    return {...pageProps, cookieHeader};
-  };
-
-  return WithCookie;
 }
