@@ -11,6 +11,7 @@
 - Hooks support [react-cookie](https://www.npmjs.com/package/react-cookie#usecookiesdependencies)
 - API Routes support
 - Perfect for authentication
+- Typescript-ready
 
 ## Installation
 
@@ -29,10 +30,10 @@ yarn add next-universal-cookie
 
 **Note:** Be aware that this will opt you out of [Automatic static optimization](https://nextjs.org/docs/advanced-features/automatic-static-optimization) for your entire application.
 
-```jsx
-import {withCookie} from 'next-universal-cookie';
+```tsx
+import {withCookie, NextCookiePageContext} from 'next-universal-cookie';
 
-Index.getInitialProps = ctx => {
+Index.getInitialProps = (ctx: NextCookiePageContext) => {
   // Available both server and client
   const cookies = ctx.cookie.getAll();
   const accessToken = ctx.cookie.get('access_token');
@@ -60,15 +61,20 @@ export default withCookie({
 
 ### With **getServerSideProps**
 
-```jsx
-import {withCookie, applyCookie} from 'next-universal-cookie';
+```tsx
+import {GetServerSideProps} from 'next';
+import {withCookie, applyServerSidePropsCookie} from 'next-universal-cookie';
 
-export const getServerSideProps = async ({req, res}) => {
+export const getServerSideProps: GetServerSideProps = async ({req, res}) => {
   applyServerSidePropsCookie(req, res);
+
+  // Typescript-ready
+  res.cookie();
+  res.clearCookie();
 
   return {
     props: {
-      // Response `cookieHeader` is required
+      // Provide the `cookieHeader` to make Hooks work
       cookieHeader: req.headers.cookie,
     },
   };
@@ -109,14 +115,15 @@ const Profile = () => {
 
 ### API Routes
 
-```js
-// pages/api/index.js
-
+```ts
+// pages/api/index.ts
+import {NextApiRequest, NextApiResponse} from 'next';
 import {applyApiCookie} from 'next-universal-cookie';
 
-export default (req, res) => {
+export default (req: NextApiRequest, res: NextApiResponse) => {
   applyApiCookie(req, res);
 
+  // Typescript-ready
   res.cookie();
   res.clearCookie();
 };
@@ -124,7 +131,7 @@ export default (req, res) => {
 
 ## API
 
-```js
+```ts
 import {
   withCookie,
   applyServerSidePropsCookie,

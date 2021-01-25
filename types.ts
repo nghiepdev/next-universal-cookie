@@ -1,14 +1,10 @@
-import {IncomingMessage, ServerResponse} from 'http';
-import {
-  GetServerSidePropsContext,
-  NextApiResponse,
-  NextPageContext,
-} from 'next';
+import {ServerResponse} from 'http';
+import {NextApiResponse, NextPageContext} from 'next';
 import Cookies, {CookieSetOptions} from 'universal-cookie';
 
 interface NextCookieResponse {
-  cookie: (name: string, value: any, option: CookieSetOptions) => void;
-  clearCookie: (name: string, option: CookieSetOptions) => void;
+  cookie: (name: string, value: any, option?: CookieSetOptions) => void;
+  clearCookie: (name: string, option?: CookieSetOptions) => void;
 }
 
 export interface NextCookiePageResponse
@@ -23,13 +19,9 @@ export interface GetCookieServerSidePropsResponse
   extends ServerResponse,
     NextCookieResponse {}
 
-export interface NextCookiePageContext extends NextPageContext {
+export interface NextCookiePageContext extends Omit<NextPageContext, 'res'> {
   cookie: Cookies;
-}
-
-export interface GetCookieServerSidePropsContext
-  extends GetServerSidePropsContext {
-  cookie: Cookies;
+  res: NextCookiePageResponse;
 }
 
 export interface WithCookieProps {

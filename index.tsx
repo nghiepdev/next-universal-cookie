@@ -5,7 +5,6 @@ import {
   NextPageContext,
   NextApiRequest,
   NextApiResponse,
-  GetServerSideProps,
   GetServerSidePropsContext,
 } from 'next';
 import {AppContext} from 'next/app';
@@ -13,6 +12,7 @@ import {serialize} from 'cookie';
 import Cookies from 'universal-cookie';
 import {CookiesProvider} from 'react-cookie';
 
+export * from './types';
 import type {
   NextCookiePageContext,
   NextCookiePageResponse,
@@ -30,9 +30,14 @@ function isApp(ctx: AppContext | NextPageContext): ctx is AppContext {
   return 'Component' in ctx;
 }
 
-function applyCookie<T extends NextCookiePageResponse | NextCookieApiResponse>(
-  req: IncomingMessage | NextApiRequest,
-  res: ServerResponse | NextApiResponse
+function applyCookie<
+  T extends
+    | NextCookiePageResponse
+    | NextCookieApiResponse
+    | GetCookieServerSidePropsResponse
+>(
+  req: IncomingMessage | NextApiRequest | GetServerSidePropsContext['req'],
+  res: ServerResponse | NextApiResponse | GetCookieServerSidePropsResponse
 ): asserts res is T {
   assertType<NextApiRequest>(req);
   assertType<T>(res);
