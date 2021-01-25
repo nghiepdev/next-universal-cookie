@@ -54,7 +54,7 @@ Index.getInitialProps = ctx => {
 };
 
 export default withCookie({
-  isLegacy: false,
+  isLegacy: true,
 })(Index);
 ```
 
@@ -63,17 +63,18 @@ export default withCookie({
 ```jsx
 import {withCookie, applyCookie} from 'next-universal-cookie';
 
-export const getServerSideProps = ({req, res}) => {
-  // Manual apply cookie helper
-  applyCookie(req, res);
+export const getServerSideProps = async ({req, res}) => {
+  applyServerSidePropsCookie(req, res);
 
   return {
     props: {
+      // Response `cookieHeader` is required
       cookieHeader: req.headers.cookie,
     },
   };
 };
 
+// Require for Hooks
 export default withCookie()(Index);
 ```
 
@@ -111,34 +112,24 @@ const Profile = () => {
 ```js
 // pages/api/index.js
 
-import {withApiCookie} from 'next-universal-cookie';
+import {applyApiCookie} from 'next-universal-cookie';
 
-function handler(req, res) {
-  // For set/delete cookie
+export default (req, res) => {
+  applyApiCookie(req, res);
+
   res.cookie();
   res.clearCookie();
-}
-
-export default withApiCookie(handler);
-```
-
-**Or manual**
-
-```js
-import {applyCookie} from 'next-universal-cookie';
-
-function handler(req, res) {
-  // Manual apply cookie
-  applyCookie(req, res);
-}
-
-export default handler;
+};
 ```
 
 ## API
 
 ```js
-import {withCookie, withApiCookie, applyCookie} from 'next-universal-cookie';
+import {
+  withCookie,
+  applyServerSidePropsCookie,
+  applyApiCookie,
+} from 'next-universal-cookie';
 ```
 
 ## License

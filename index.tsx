@@ -1,6 +1,13 @@
 import {IncomingMessage, ServerResponse} from 'http';
 import {createElement, useMemo} from 'react';
-import {NextPage, NextPageContext, NextApiHandler} from 'next';
+import {
+  NextPage,
+  NextPageContext,
+  NextApiRequest,
+  NextApiResponse,
+  GetServerSideProps,
+  GetServerSidePropsContext,
+} from 'next';
 import {AppContext} from 'next/app';
 import {serialize} from 'cookie';
 import Cookies from 'universal-cookie';
@@ -8,10 +15,11 @@ import {CookiesProvider} from 'react-cookie';
 
 import type {
   NextCookiePageContext,
-  NextWithCookieIncomingMessage,
-  NextWithCookieServerResponse,
+  NextCookiePageResponse,
+  NextCookieApiResponse,
   WithCookieProps,
   NextCookieOption,
+  GetCookieServerSidePropsResponse,
 } from './types';
 
 function assertType<T>(value: unknown): asserts value is T {}
@@ -22,20 +30,17 @@ function isApp(ctx: AppContext | NextPageContext): ctx is AppContext {
   return 'Component' in ctx;
 }
 
-function injectRequestCookie(
-  req: IncomingMessage
-): asserts req is NextWithCookieIncomingMessage {
-  assertType<NextWithCookieIncomingMessage>(req);
+function applyCookie<T extends NextCookiePageResponse | NextCookieApiResponse>(
+  req: IncomingMessage | NextApiRequest,
+  res: ServerResponse | NextApiResponse
+): asserts res is T {
+  assertType<NextApiRequest>(req);
+  assertType<T>(res);
 
+  // Inject cookies
   if (req.cookies === undefined) {
     req.cookies = new Cookies(req.headers.cookie).getAll();
   }
-}
-
-function injectResponseCookie(
-  res: ServerResponse
-): asserts res is NextWithCookieServerResponse {
-  assertType<NextWithCookieServerResponse>(res);
 
   // Set cookie
   if (res.cookie === undefined) {
@@ -62,29 +67,31 @@ function injectResponseCookie(
   }
 }
 
-export function applyCookie(req: IncomingMessage, res: ServerResponse) {
-  injectRequestCookie(req);
-  injectResponseCookie(res);
+export function applyApiCookie<T extends NextCookieApiResponse>(
+  req: NextApiRequest,
+  res: NextApiResponse
+): asserts res is T {
+  applyCookie<T>(req, res);
 }
 
-export function withApiCookie<T = any>(handler: NextApiHandler<T>) {
-  const withCookie: typeof handler = (req, res) => {
-    applyCookie(req, res);
-
-    return handler(req, res);
-  };
-
-  return withCookie;
-}
+export const applyServerSidePropsCookie = <
+  T extends GetCookieServerSidePropsResponse
+>(
+  req: GetServerSidePropsContext['req'],
+  res: GetServerSidePropsContext['res']
+): asserts res is T => {
+  applyCookie<T>(req, res);
+};
 
 export function withCookie(option?: NextCookieOption) {
-  return (Page: NextPage<WithCookieProps>) => {
+  return (Page: NextPage) => {
     const {isLegacy} = option ?? {isLegacy: false};
 
-    const WithCookie = (props: WithCookieProps) => {
-      const cookies = useMemo(() => new Cookies(props.cookieHeader), [
-        props.cookieHeader,
-      ]);
+    const WithCookie = (props: any) => {
+      const cookies = useMemo(
+        () => new Cookies((props as WithCookieProps).cookieHeader),
+        [props.cookieHeader]
+      );
 
       return createElement(
         CookiesProvider,
@@ -98,7 +105,7 @@ export function withCookie(option?: NextCookieOption) {
 
     if (isLegacy === true) {
       WithCookie.getInitialProps = async (
-        ctx: AppContext | NextCookiePageContext
+        ctx: AppContext | NextPageContext
       ): Promise<WithCookieProps> => {
         if (isApp(ctx)) {
           throw new Error(
@@ -113,10 +120,10 @@ export function withCookie(option?: NextCookieOption) {
             ? ctx.req!.headers.cookie ?? ''
             : document.cookie;
 
-        ctx.cookie = new Cookies(cookieHeader);
+        (ctx as NextCookiePageContext).cookie = new Cookies(cookieHeader);
 
         if (ctx.req && ctx.res) {
-          applyCookie(ctx.req, ctx.res);
+          applyCookie<NextCookiePageResponse>(ctx.req, ctx.res);
         }
 
         if (typeof Page.getInitialProps === 'function') {
