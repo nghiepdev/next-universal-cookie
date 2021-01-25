@@ -21,3 +21,11 @@ export interface NextWithCookieServerResponse extends ServerResponse {
   cookie: (name: string, value: any, option: CookieSetOptions) => void;
   clearCookie: (name: string, option: CookieSetOptions) => void;
 }
+
+export interface NextCookieOption {
+  /**
+   * @description Set `true` while `getServerSideProps` in use
+   * @default false
+   */
+  isServerSide: boolean;
+}

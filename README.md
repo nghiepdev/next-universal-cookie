@@ -118,7 +118,7 @@ Index.getInitialProps = ctx => {
 };
 ```
 
-**Note:** If you are using `withCookie` in per-page and want to using cookie in `getServerSideProps` make sure `isSSG: true` option and wrap by `withServerSideProps`.
+**Note:** If you are using `withCookie` in per-page and want to using cookie in `getServerSideProps` make sure `isServerSide: true` option and wrap by `withServerSideProps`.
 
 **Example:**
 
@@ -130,7 +130,7 @@ export const getServerSideProps = withServerSideProps(({req, res}) => {
 });
 
 export default withCookie({
-  isSSG: true,
+  isServerSide: true,
 })(Index);
 ```
 

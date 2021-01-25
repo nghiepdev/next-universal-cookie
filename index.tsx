@@ -15,14 +15,8 @@ import type {
   NextCookieContext,
   NextWithCookieIncomingMessage,
   NextWithCookieServerResponse,
+  NextCookieOption,
 } from './types';
-
-interface NextCookieOption {
-  /**
-   * @default false
-   */
-  isSSG: boolean;
-}
 
 interface Props {
   cookieHeader: string;
@@ -81,7 +75,7 @@ export function injectResponseCookie(
 export function withCookie(option?: NextCookieOption) {
   // AppOrPage: NextPage<Props> | typeof NextApp
   return (AppOrPage: NextPage<Props>) => {
-    const {isSSG} = option ?? {isSSG: false};
+    const {isServerSide} = option ?? {isServerSide: false};
 
     const WithCookieWrapper = (props: Props) => {
       const cookies = useMemo(() => new Cookies(props.cookieHeader), [
@@ -97,7 +91,7 @@ export function withCookie(option?: NextCookieOption) {
 
     WithCookieWrapper.displayName = `withCookie(${AppOrPage.displayName})`;
 
-    if (isSSG === false) {
+    if (isServerSide === false) {
       WithCookieWrapper.getInitialProps = async (
         appOrPageCtx: NextCookieContext
       ): Promise<Props> => {
