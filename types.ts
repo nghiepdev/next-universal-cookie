@@ -13,13 +13,13 @@ export interface NextCookieAppContext extends AppContext {
 
 export type NextCookieContext = NextCookiePageContext | NextCookieAppContext;
 
-export interface NextWithCookieIncomingMessage extends IncomingMessage {
+export interface NextCookieRequest extends IncomingMessage {
   cookies: Record<string, string>;
 }
 
-export interface NextWithCookieServerResponse extends ServerResponse {
-  cookie: (name: string, value: any, option: CookieSetOptions) => void;
-  clearCookie: (name: string, option: CookieSetOptions) => void;
+export interface NextCookieResponse extends ServerResponse {
+  cookie: (name: string, value: any, option?: CookieSetOptions) => void;
+  clearCookie: (name: string, option?: CookieSetOptions) => void;
 }
 
 export interface NextCookieOption {

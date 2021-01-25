@@ -11,10 +11,11 @@ import {serialize} from 'cookie';
 import Cookies from 'universal-cookie';
 import {CookiesProvider} from 'react-cookie';
 
+export * from './types';
 import type {
   NextCookieContext,
-  NextWithCookieIncomingMessage,
-  NextWithCookieServerResponse,
+  NextCookieRequest,
+  NextCookieResponse,
   NextCookieOption,
 } from './types';
 
@@ -34,8 +35,8 @@ function isApp(
 
 export function injectRequestCookie(
   req: IncomingMessage
-): asserts req is NextWithCookieIncomingMessage {
-  assertType<NextWithCookieIncomingMessage>(req);
+): asserts req is NextCookieRequest {
+  assertType<NextCookieRequest>(req);
 
   if (req.cookies === undefined) {
     req.cookies = new Cookies(req.headers.cookie).getAll();
@@ -44,8 +45,8 @@ export function injectRequestCookie(
 
 export function injectResponseCookie(
   res: ServerResponse
-): asserts res is NextWithCookieServerResponse {
-  assertType<NextWithCookieServerResponse>(res);
+): asserts res is NextCookieResponse {
+  assertType<NextCookieResponse>(res);
 
   // Set cookie
   if (res.cookie === undefined) {
