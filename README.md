@@ -12,7 +12,7 @@
 - API Routes support
 - Perfect for authentication
 
-**Note:** From the `Next.js >=9.5` the `req.cookies` built-in supported. If you are working on `>=9.5 ` you should use [react-cookie](https://www.npmjs.com/package/react-cookie#usecookiesdependencies) directly instead.
+**Note:** From the `Next.js >=9.5` the `req.cookies` built-in supported. If you are working on `>=9.5 ` please upgrade to `next-universal-cookie@1`
 
 ## Installation
 
@@ -35,10 +35,11 @@ const App = ({Component, pageProps}) => {
 export default withCookie()(App);
 ```
 
-**Note:** Be aware that this will opt you out of [Automatic static optimization](https://nextjs.org/docs/advanced-features/automatic-static-optimization) and [getServerSideProps
-](https://nextjs.org/docs/basic-features/data-fetching#getserversideprops-server-side-rendering)(Server-side Rendering) for your entire application.
+**Note:**
 
-> This will be deprecated in the next major release!
+- Be aware that this will opt you out of [Automatic static optimization](https://nextjs.org/docs/advanced-features/automatic-static-optimization) and [getServerSideProps
+  ](https://nextjs.org/docs/basic-features/data-fetching#getserversideprops-server-side-rendering)(Server-side Rendering) for your entire application.
+- This will be deprecated in the next major release!
 
 ### Integration for each per-page
 
@@ -61,7 +62,12 @@ Reference [react-cookie](https://www.npmjs.com/package/react-cookie#usecookiesde
 
 #### Read cookie
 
-In `getInitialProps`
+In ~~getInitialProps~~
+
+**Note:**
+
+- Be aware that this will opt you out of [Automatic static optimization](https://nextjs.org/docs/advanced-features/automatic-static-optimization) for your entire application.
+- This will be deprecated in the next major release!
 
 ```jsx
 Index.getInitialProps = ctx => {
@@ -112,19 +118,19 @@ Index.getInitialProps = ctx => {
 };
 ```
 
-**Note:** If you are using `withCookie` in per-page and want to using cookie in `getServerSideProps` make sure `isServerSide: true` option and wrap by `withServerSideProps`.
+**Note:** If you are using `withCookie` in per-page and want to using cookie in `getServerSideProps` make sure `isSSG: true` option and wrap by `withServerSideProps`.
 
 **Example:**
 
 ```jsx
 import {withServerSideProps, withCookie} from 'next-universal-cookie';
 
-export const getServerSideProps = withServerSideProps(ctx => {
+export const getServerSideProps = withServerSideProps(({req, res}) => {
   // Code
 });
 
 export default withCookie({
-  isServerSide: true,
+  isSSG: true,
 })(Index);
 ```
 
