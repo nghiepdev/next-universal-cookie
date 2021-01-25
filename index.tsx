@@ -21,12 +21,14 @@ interface NextCookieOption {
   /**
    * @default false
    */
-  isServerSide: boolean;
+  isSSG: boolean;
 }
 
 interface Props {
   cookieHeader: string;
 }
+
+function assertType<T>(value: unknown): asserts value is T {}
 
 const SET_COOKIE_HEADER = 'Set-Cookie';
 
@@ -39,39 +41,47 @@ function isApp(
 export function injectRequestCookie(
   req: IncomingMessage
 ): asserts req is NextWithCookieIncomingMessage {
-  (req as NextWithCookieIncomingMessage).cookies = new Cookies(
-    req.headers.cookie
-  ).getAll();
+  assertType<NextWithCookieIncomingMessage>(req);
+
+  if (req.cookies === undefined) {
+    req.cookies = new Cookies(req.headers.cookie).getAll();
+  }
 }
 
 export function injectResponseCookie(
   res: ServerResponse
 ): asserts res is NextWithCookieServerResponse {
+  assertType<NextWithCookieServerResponse>(res);
+
   // Set cookie
-  (res as NextWithCookieServerResponse).cookie = (...args) => {
-    res.setHeader(SET_COOKIE_HEADER, [
-      ...((res.getHeader(SET_COOKIE_HEADER) as string[]) || []),
-      serialize(...args),
-    ]);
-  };
+  if (res.cookie === undefined) {
+    res.cookie = (...args) => {
+      res.setHeader(SET_COOKIE_HEADER, [
+        ...((res.getHeader(SET_COOKIE_HEADER) as string[]) || []),
+        serialize(...args),
+      ]);
+    };
+  }
 
   // Delete cookie
-  (res as NextWithCookieServerResponse).clearCookie = (name, option = {}) => {
-    res.setHeader(SET_COOKIE_HEADER, [
-      ...((res.getHeader(SET_COOKIE_HEADER) as string[]) || []),
-      serialize(name, '', {
-        path: '/',
-        ...option,
-        maxAge: -1,
-      }),
-    ]);
-  };
+  if (res.clearCookie === undefined) {
+    res.clearCookie = (name, option = {}) => {
+      res.setHeader(SET_COOKIE_HEADER, [
+        ...((res.getHeader(SET_COOKIE_HEADER) as string[]) || []),
+        serialize(name, '', {
+          path: '/',
+          ...option,
+          maxAge: -1,
+        }),
+      ]);
+    };
+  }
 }
 
 export function withCookie(option?: NextCookieOption) {
   // AppOrPage: NextPage<Props> | typeof NextApp
   return (AppOrPage: NextPage<Props>) => {
-    const {isServerSide} = option ?? {isServerSide: false};
+    const {isSSG} = option ?? {isSSG: false};
 
     const WithCookieWrapper = (props: Props) => {
       const cookies = useMemo(() => new Cookies(props.cookieHeader), [
@@ -87,7 +97,7 @@ export function withCookie(option?: NextCookieOption) {
 
     WithCookieWrapper.displayName = `withCookie(${AppOrPage.displayName})`;
 
-    if (!isServerSide) {
+    if (isSSG === false) {
       WithCookieWrapper.getInitialProps = async (
         appOrPageCtx: NextCookieContext
       ): Promise<Props> => {

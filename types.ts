@@ -13,11 +13,6 @@ export interface NextCookieAppContext extends AppContext {
 
 export type NextCookieContext = NextCookiePageContext | NextCookieAppContext;
 
-export interface NextCookieServerSidePropsContext
-  extends GetServerSidePropsContext {
-  cookie: Cookies;
-}
-
 export interface NextWithCookieIncomingMessage extends IncomingMessage {
   cookies: Record<string, string>;
 }
