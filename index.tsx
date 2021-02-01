@@ -93,15 +93,13 @@ export function withCookie(option?: NextCookieOption) {
     const {isLegacy} = option ?? {isLegacy: false};
 
     const WithCookie = (props: any) => {
-      const cookies = useMemo(
-        () => new Cookies((props as WithCookieProps).cookieHeader),
-        [props.cookieHeader]
-      );
+      const {cookieHeader, ...pageProps}: WithCookieProps = props;
+      const cookies = useMemo(() => new Cookies(cookieHeader), [cookieHeader]);
 
       return createElement(
         CookiesProvider,
         {cookies},
-        createElement(Page, props)
+        createElement(Page, pageProps)
       );
     };
 
