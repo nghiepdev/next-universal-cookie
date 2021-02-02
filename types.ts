@@ -18,20 +18,3 @@ export interface NextCookieApiResponse
 export interface GetCookieServerSidePropsResponse
   extends ServerResponse,
     NextCookieResponse {}
-
-export interface NextCookiePageContext extends Omit<NextPageContext, 'res'> {
-  cookie: Cookies;
-  res: NextCookiePageResponse;
-}
-
-export interface WithCookieProps {
-  cookieHeader?: string;
-}
-
-export interface NextCookieOption {
-  /**
-   * @description Set `true` while getInitialProps in use
-   * @default false
-   */
-  isLegacy: boolean;
-}

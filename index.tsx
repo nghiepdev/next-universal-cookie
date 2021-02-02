@@ -1,34 +1,20 @@
 import {IncomingMessage, ServerResponse} from 'http';
-import {createElement, useMemo} from 'react';
-import {
-  NextPage,
-  NextPageContext,
-  NextApiRequest,
-  NextApiResponse,
-  GetServerSidePropsContext,
-} from 'next';
-import {AppContext} from 'next/app';
+import {createElement} from 'react';
+import {NextApiRequest, NextApiResponse, GetServerSidePropsContext} from 'next';
 import {serialize} from 'cookie';
-import Cookies from 'universal-cookie';
-import {CookiesProvider} from 'react-cookie';
+import {Cookies, CookiesProvider, useCookies as useCookie} from 'react-cookie';
 
 export * from './types';
+export {useCookie};
 import type {
-  NextCookiePageContext,
   NextCookiePageResponse,
   NextCookieApiResponse,
-  WithCookieProps,
-  NextCookieOption,
   GetCookieServerSidePropsResponse,
 } from './types';
 
 function assertType<T>(value: unknown): asserts value is T {}
 
 const SET_COOKIE_HEADER = 'Set-Cookie';
-
-function isApp(ctx: AppContext | NextPageContext): ctx is AppContext {
-  return 'Component' in ctx;
-}
 
 function applyCookie<
   T extends
@@ -57,7 +43,7 @@ function applyCookie<
     };
   }
 
-  // Delete cookie
+  // Destroy cookie
   if (res.clearCookie === undefined) {
     res.clearCookie = (name, options = {}) => {
       res.setHeader(SET_COOKIE_HEADER, [
@@ -88,55 +74,12 @@ export const applyServerSidePropsCookie = <
   applyCookie<T>(req, res);
 };
 
-export function withCookie(option?: NextCookieOption) {
-  return (Page: NextPage) => {
-    const {isLegacy} = option ?? {isLegacy: false};
-
-    const WithCookie = (props: any) => {
-      const {cookieHeader, ...pageProps}: WithCookieProps = props;
-      const cookies = useMemo(() => new Cookies(cookieHeader), [cookieHeader]);
-
-      return createElement(
-        CookiesProvider,
-        {cookies},
-        createElement(Page, pageProps)
-      );
-    };
-
-    const displayName = Page.displayName || Page.name || 'Component';
-    WithCookie.displayName = `withCookie(${displayName})`;
-
-    if (isLegacy === true) {
-      WithCookie.getInitialProps = async (
-        ctx: AppContext | NextPageContext
-      ): Promise<WithCookieProps> => {
-        if (isApp(ctx)) {
-          throw new Error(
-            'withCookie() is no longer supported in Custom <App />. Read more: https://err.sh/next.js/opt-out-auto-static-optimization'
-          );
-        }
-
-        let pageProps = {};
-
-        const cookieHeader =
-          typeof window === 'undefined'
-            ? ctx.req!.headers.cookie ?? ''
-            : document.cookie;
-
-        (ctx as NextCookiePageContext).cookie = new Cookies(cookieHeader);
-
-        if (ctx.req && ctx.res) {
-          applyCookie<NextCookiePageResponse>(ctx.req, ctx.res);
-        }
-
-        if (typeof Page.getInitialProps === 'function') {
-          pageProps = await Page.getInitialProps(ctx);
-        }
-
-        return {...pageProps, cookieHeader};
-      };
-    }
-
-    return WithCookie;
-  };
+export function NextCookieProvider({children, cookie}) {
+  return createElement(
+    CookiesProvider,
+    {
+      cookies: cookie instanceof Cookies ? cookie : new Cookies(cookie),
+    },
+    children
+  );
 }
