@@ -10,6 +10,6 @@
     "strict": true,
     "noImplicitAny": false
   },
-  "include": ["index.tsx"],
+  "include": ["index.ts"],
   "exclude": ["node_modules"]
 }
