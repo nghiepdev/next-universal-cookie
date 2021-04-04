@@ -1,5 +1,5 @@
 import {IncomingMessage, ServerResponse} from 'http';
-import {createElement} from 'react';
+import React, {createElement} from 'react';
 import {NextApiRequest, NextApiResponse, GetServerSidePropsContext} from 'next';
 import {serialize} from 'cookie';
 import {Cookies, CookiesProvider, useCookies as useCookie} from 'react-cookie';
@@ -74,7 +74,13 @@ export const applyServerSidePropsCookie = <
   applyCookie<T>(req, res);
 };
 
-export function NextCookieProvider({children, cookie}) {
+export function NextCookieProvider({
+  children,
+  cookie,
+}: {
+  children: React.ReactNode;
+  cookie: Cookies | string;
+}) {
   return createElement(
     CookiesProvider,
     {
