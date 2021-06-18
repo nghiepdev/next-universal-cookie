@@ -1,39 +1,14 @@
 # next-universal-cookie
 
 [![NPM version](https://img.shields.io/npm/v/next-universal-cookie.svg)](https://www.npmjs.com/package/next-universal-cookie)
-[![NPM yearly download](https://img.shields.io/npm/dy/next-universal-cookie.svg)](https://www.npmjs.com/package/next-universal-cookie)
+[![NPM monthly download](https://img.shields.io/npm/dm/next-universal-cookie.svg)](https://www.npmjs.com/package/next-universal-cookie)
 
-> 🍪 Cookie for Next.js like a pro. A wrapper for react-cookie to Next.js
+> Provides way to read, set and destroy a cookie for Next.js similar to `express` such as [req.cookies](http://expressjs.com/en/5x/api.html#req.cookies), [res.cookie](http://expressjs.com/en/5x/api.html#res.cookie) and [res.clearCookie](http://expressjs.com/en/5x/api.html#res.clearCookie)
 
-## Features
-
-- Server-side Rendering support, just same as [express](http://expressjs.com/en/5x/api.html#res.cookie) `res.cookie` and `res.clearCookie`
-- Hooks support [react-cookie](https://www.npmjs.com/package/react-cookie#usecookiesdependencies)
-- API Routes support
-- Perfect for authentication
-- Typescript-ready
-
-## Installation and setup
-
-### Installation
+## Installation
 
 ```bash
 yarn add next-universal-cookie
-```
-
-### Setup
-
-```tsx
-// pages/_app.tsx
-import {NextCookieProvider} from 'next-universal-cookie';
-
-export default function App({Component, pageProps}) {
-  return (
-    <NextCookieProvider cookie={pageProps.cookie}>
-      <Component {...pageProps} />
-    </NextCookieProvider>
-  );
-}
 ```
 
 ## Usage
@@ -41,51 +16,26 @@ export default function App({Component, pageProps}) {
 ### With **getServerSideProps** and ~~getInitialProps~~
 
 ```tsx
-import {GetServerSideProps} from 'next';
-import {applyServerSidePropsCookie} from 'next-universal-cookie';
+import {GetServerSideProps, NextPageContext} from 'next';
+import {applyServerSideCookie} from 'next-universal-cookie';
 
 export const getServerSideProps: GetServerSideProps = async ({req, res}) => {
-  applyServerSidePropsCookie(req, res);
+  applyServerSideCookie(req, res);
 
   // Typescript-ready
+
+  // Parse
+  const allCookie = req.cookies;
+
+  // Set
   res.cookie();
+
+  // Destroy
   res.clearCookie();
 
   return {
-    props: {
-      // Export the `cookie` prop to use cookie with Server Side Rendering
-      cookie: req.headers.cookie,
-    },
+    props: {},
   };
-};
-```
-
-### With Hooks
-
-Read more [react-cookie](https://github.com/reactivestack/cookies/tree/master/packages/react-cookie#usecookiesdependencies).
-
-```tsx
-import {useCookie} from 'next-universal-cookie';
-
-const Profile = () => {
-  const [cookies, setCookie, removeCookie] = useCookie(['access_token']);
-
-  function handleLogout() {
-    removeCookie('access_token');
-
-    setCookie('redirect_uri', '/home', {
-      path: '/',
-    });
-  }
-
-  return (
-    <div>
-      <h3>Access token: {cookies.access_token}</h3>
-      <div>
-        <button onClick={handleLogout}>Logout</button>
-      </div>
-    </div>
-  );
 };
 ```
 
@@ -100,6 +50,7 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
   applyApiCookie(req, res);
 
   // Typescript-ready
+  const allCookie = req.cookies;
   res.cookie();
   res.clearCookie();
 };
@@ -108,12 +59,7 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
 ## API
 
 ```tsx
-import {
-  NextCookieProvider
-  useCookie,
-  applyServerSidePropsCookie,
-  applyApiCookie,
-} from 'next-universal-cookie';
+import {applyServerSideCookie, applyApiCookie} from 'next-universal-cookie';
 ```
 
 ## License

@@ -1,36 +1,24 @@
 import {IncomingMessage, ServerResponse} from 'http';
-import React, {createElement} from 'react';
 import {NextApiRequest, NextApiResponse, GetServerSidePropsContext} from 'next';
-import {serialize} from 'cookie';
-import {Cookies, CookiesProvider, useCookies as useCookie} from 'react-cookie';
+import cookie from 'cookie';
 
 export * from './types';
-export {useCookie};
-import type {
-  NextCookiePageResponse,
-  NextCookieApiResponse,
-  GetCookieServerSidePropsResponse,
-} from './types';
+import type {NextCookiePageResponse, NextCookieApiResponse} from './types';
 
 function assertType<T>(value: unknown): asserts value is T {}
 
 const SET_COOKIE_HEADER = 'Set-Cookie';
 
-function applyCookie<
-  T extends
-    | NextCookiePageResponse
-    | NextCookieApiResponse
-    | GetCookieServerSidePropsResponse
->(
-  req: IncomingMessage | NextApiRequest | GetServerSidePropsContext['req'],
-  res: ServerResponse | NextApiResponse | GetCookieServerSidePropsResponse
+function applyCookie<T extends NextCookiePageResponse | NextCookieApiResponse>(
+  req: IncomingMessage | GetServerSidePropsContext['req'] | NextApiRequest,
+  res: ServerResponse | GetServerSidePropsContext['res'] | NextApiResponse
 ): asserts res is T {
   assertType<NextApiRequest>(req);
   assertType<T>(res);
 
   // Inject cookies
   if (req.cookies === undefined) {
-    req.cookies = new Cookies(req.headers.cookie).getAll();
+    req.cookies = cookie.parse(req.headers.cookie ?? '');
   }
 
   // Set cookie
@@ -38,7 +26,7 @@ function applyCookie<
     res.cookie = (...args) => {
       res.setHeader(SET_COOKIE_HEADER, [
         ...((res.getHeader(SET_COOKIE_HEADER) as string[]) || []),
-        serialize(...args),
+        cookie.serialize(...args),
       ]);
     };
   }
@@ -48,7 +36,7 @@ function applyCookie<
     res.clearCookie = (name, options = {}) => {
       res.setHeader(SET_COOKIE_HEADER, [
         ...((res.getHeader(SET_COOKIE_HEADER) as string[]) || []),
-        serialize(name, '', {
+        cookie.serialize(name, '', {
           path: '/',
           ...options,
           maxAge: -1,
@@ -65,27 +53,9 @@ export function applyApiCookie<T extends NextCookieApiResponse>(
   applyCookie<T>(req, res);
 }
 
-export const applyServerSidePropsCookie = <
-  T extends GetCookieServerSidePropsResponse
->(
-  req: GetServerSidePropsContext['req'],
-  res: GetServerSidePropsContext['res']
+export const applyServerSideCookie = <T extends NextCookiePageResponse>(
+  req: IncomingMessage | GetServerSidePropsContext['req'],
+  res: ServerResponse | GetServerSidePropsContext['res']
 ): asserts res is T => {
   applyCookie<T>(req, res);
 };
-
-export function NextCookieProvider({
-  children,
-  cookie,
-}: {
-  children: React.ReactNode;
-  cookie: Cookies | string;
-}) {
-  return createElement(
-    CookiesProvider,
-    {
-      cookies: cookie instanceof Cookies ? cookie : new Cookies(cookie),
-    },
-    children
-  );
-}

@@ -1,10 +1,10 @@
 import {ServerResponse} from 'http';
-import {NextApiResponse, NextPageContext} from 'next';
-import Cookies, {CookieSetOptions} from 'universal-cookie';
+import {NextApiResponse} from 'next';
+import {CookieSerializeOptions} from 'cookie';
 
 interface NextCookieResponse {
-  cookie: (name: string, value: any, option?: CookieSetOptions) => void;
-  clearCookie: (name: string, option?: CookieSetOptions) => void;
+  cookie: (name: string, value: any, option?: CookieSerializeOptions) => void;
+  clearCookie: (name: string, option?: CookieSerializeOptions) => void;
 }
 
 export interface NextCookiePageResponse
@@ -13,8 +13,4 @@ export interface NextCookiePageResponse
 
 export interface NextCookieApiResponse
   extends NextApiResponse,
-    NextCookieResponse {}
-
-export interface GetCookieServerSidePropsResponse
-  extends ServerResponse,
     NextCookieResponse {}
