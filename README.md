@@ -1,7 +1,7 @@
 # next-universal-cookie
 
 [![NPM version](https://img.shields.io/npm/v/next-universal-cookie.svg)](https://www.npmjs.com/package/next-universal-cookie)
-[![NPM yearly download](https://img.shields.io/npm/dy/next-universal-cookie.svg)](https://www.npmjs.com/package/next-universal-cookie)
+[![NPM monthly download](https://img.shields.io/npm/dm/next-universal-cookie.svg)](https://www.npmjs.com/package/next-universal-cookie)
 
 > 🍪 Cookie for Next.js like a pro. A wrapper for react-cookie to Next.js
 
@@ -96,13 +96,13 @@ const Profile = () => {
 import {NextApiRequest, NextApiResponse} from 'next';
 import {applyApiCookie} from 'next-universal-cookie';
 
-export default (req: NextApiRequest, res: NextApiResponse) => {
+export default function handler(req: NextApiRequest, res: NextApiResponse) {
   applyApiCookie(req, res);
 
   // Typescript-ready
   res.cookie();
   res.clearCookie();
-};
+}
 ```
 
 ## API
