@@ -16,7 +16,7 @@ function applyCookie<T extends NextCookiePageResponse | NextCookieApiResponse>(
   assertType<NextApiRequest>(req);
   assertType<T>(res);
 
-  // Inject cookies
+  // Parse cookies
   if (req.cookies === undefined) {
     req.cookies = cookie.parse(req.headers.cookie ?? '');
   }
