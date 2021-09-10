@@ -11,6 +11,6 @@ export interface NextCookiePageResponse
   extends ServerResponse,
     NextCookieResponse {}
 
-export interface NextCookieApiResponse
-  extends NextApiResponse,
+export interface NextCookieApiResponse<R extends any = any>
+  extends NextApiResponse<R>,
     NextCookieResponse {}

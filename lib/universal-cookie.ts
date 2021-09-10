@@ -45,10 +45,10 @@ function applyCookie<T extends NextCookiePageResponse | NextCookieApiResponse>(
   }
 }
 
-export function applyApiCookie<T extends NextCookieApiResponse>(
-  req: NextApiRequest,
-  res: NextApiResponse
-): asserts res is T {
+export function applyApiCookie<
+  R extends any,
+  T extends NextCookieApiResponse<R>
+>(req: NextApiRequest, res: NextApiResponse<R>): asserts res is T {
   applyCookie<T>(req, res);
 }
 
