@@ -24,7 +24,7 @@ export const getServerSideProps: GetServerSideProps = async ({req, res}) => {
 
   // Typescript-ready
 
-  // Parse
+  // Parse all cookies
   const allCookies = req.cookies;
 
   // Set
@@ -46,14 +46,22 @@ export const getServerSideProps: GetServerSideProps = async ({req, res}) => {
 import {NextApiRequest, NextApiResponse} from 'next';
 import {applyApiCookie} from 'next-universal-cookie';
 
-export default (req: NextApiRequest, res: NextApiResponse) => {
+export default function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<{ok: boolean}>
+) {
   applyApiCookie(req, res);
 
   // Typescript-ready
   const allCookies = req.cookies;
   res.cookie();
   res.clearCookie();
-};
+
+  // Response
+  res.json({
+    ok: true,
+  });
+}
 ```
 
 ## API
