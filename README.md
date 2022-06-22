@@ -3,7 +3,7 @@
 [![NPM version](https://img.shields.io/npm/v/next-universal-cookie.svg)](https://www.npmjs.com/package/next-universal-cookie)
 [![NPM monthly download](https://img.shields.io/npm/dm/next-universal-cookie.svg)](https://www.npmjs.com/package/next-universal-cookie)
 
-> Provides way to read, set and destroy a cookie for Next.js similar to `express` such as [req.cookies](http://expressjs.com/en/5x/api.html#req.cookies), [res.cookie](http://expressjs.com/en/5x/api.html#res.cookie) and [res.clearCookie](http://expressjs.com/en/5x/api.html#res.clearCookie)
+> Provides way to read, set and delete a cookie for Next.js similar to `express` such as [req.cookies](http://expressjs.com/en/5x/api.html#req.cookies), [res.cookie](http://expressjs.com/en/5x/api.html#res.cookie) and [res.clearCookie](http://expressjs.com/en/5x/api.html#res.clearCookie)
 
 ## Installation
 
@@ -30,7 +30,7 @@ export const getServerSideProps: GetServerSideProps = async ({req, res}) => {
   // Set
   res.cookie();
 
-  // Destroy
+  // Delete
   res.clearCookie();
 
   return {

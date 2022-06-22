@@ -1,7 +1,7 @@
 {
   "name": "next-universal-cookie",
   "version": "3.0.1",
-  "description": "🍪 Provides way to read, set and destroy a cookie for Next.js",
+  "description": "🍪 Provides way to read, set and delete a cookie for Next.js",
   "keywords": [
     "cookie",
     "next.js"
@@ -13,7 +13,9 @@
   ],
   "scripts": {
     "build": "tsc",
-    "prepublishOnly": "npm run build"
+    "prebuild": "rm -rf dist",
+    "prepublishOnly": "npm run build",
+    "postbuild": "sed '/assertType/d' dist/lib/next-universal-cookie.js > tmp.js && mv tmp.js dist/lib/next-universal-cookie.js"
   },
   "dependencies": {
     "@types/cookie": "^0.5.1",
