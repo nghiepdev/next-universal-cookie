@@ -4,7 +4,6 @@ import cookie from 'cookie';
 
 import type {NextCookiePageResponse, NextCookieApiResponse} from './types';
 
-function assertType<T>(value: unknown): asserts value is T {}
 
 const SET_COOKIE_HEADER = 'Set-Cookie';
 
@@ -15,6 +14,16 @@ function applyCookie<T extends NextCookiePageResponse | NextCookieApiResponse>(
   assertType<NextApiRequest>(req);
   assertType<T>(res);
 
+  function getCookieHeaders() {
+    let cookieHeaders = res.getHeader(SET_COOKIE_HEADER) ?? [];
+
+    if (!Array.isArray(cookieHeaders)) {
+      cookieHeaders = [`${cookieHeaders}`];
+    }
+
+    return cookieHeaders;
+  }
+
   // Parse cookies
   if (req.cookies === undefined) {
     req.cookies = cookie.parse(req.headers.cookie ?? '');
@@ -24,17 +33,17 @@ function applyCookie<T extends NextCookiePageResponse | NextCookieApiResponse>(
   if (res.cookie === undefined) {
     res.cookie = (...args) => {
       res.setHeader(SET_COOKIE_HEADER, [
-        ...((res.getHeader(SET_COOKIE_HEADER) as string[]) || []),
+        ...getCookieHeaders(),
         cookie.serialize(...args),
       ]);
     };
   }
 
-  // Destroy cookie
+  // Remove cookie
   if (res.clearCookie === undefined) {
     res.clearCookie = (name, options = {}) => {
       res.setHeader(SET_COOKIE_HEADER, [
-        ...((res.getHeader(SET_COOKIE_HEADER) as string[]) || []),
+        ...getCookieHeaders(),
         cookie.serialize(name, '', {
           path: '/',
           ...options,
