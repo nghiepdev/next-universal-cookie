@@ -8,7 +8,7 @@
 ## Installation
 
 ```bash
-yarn add next-universal-cookie
+npm install next-universal-cookie
 ```
 
 ## Usage
