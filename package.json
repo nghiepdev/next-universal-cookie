@@ -1,6 +1,6 @@
 {
   "name": "next-universal-cookie",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "description": "🍪 Provides way to read, set and delete a cookie for Next.js",
   "keywords": [
     "cookie",
