@@ -27,10 +27,10 @@ export const getServerSideProps: GetServerSideProps = async ({req, res}) => {
   // Parse all cookies
   const allCookies = req.cookies;
 
-  // Set
+  // Set a cookie
   res.cookie();
 
-  // Delete
+  // Delete a cookie
   res.clearCookie();
 
   return {
@@ -57,10 +57,7 @@ export default function handler(
   res.cookie();
   res.clearCookie();
 
-  // Response
-  res.json({
-    ok: true,
-  });
+  res.json({ok: true});
 }
 ```
 

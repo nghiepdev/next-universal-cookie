@@ -1,5 +1,9 @@
-import {IncomingMessage, ServerResponse} from 'http';
-import {NextApiRequest, NextApiResponse, GetServerSidePropsContext} from 'next';
+import type {IncomingMessage, ServerResponse} from 'http';
+import type {
+  NextApiRequest,
+  NextApiResponse,
+  GetServerSidePropsContext,
+} from 'next';
 import cookie from 'cookie';
 
 import type {NextCookiePageResponse, NextCookieApiResponse} from './types';
@@ -16,21 +20,21 @@ function applyCookie<T extends NextCookiePageResponse | NextCookieApiResponse>(
   assertType<T>(res);
 
   function getCookieHeaders() {
-    let cookieHeaders = res.getHeader(SET_COOKIE_HEADER) ?? [];
+    const cookieHeaders = res.getHeader(SET_COOKIE_HEADER) ?? [];
 
     if (!Array.isArray(cookieHeaders)) {
-      cookieHeaders = [`${cookieHeaders}`];
+      return [`${cookieHeaders}`];
     }
 
     return cookieHeaders;
   }
 
-  // Parse cookies
+  // Parse all cookies
   if (req.cookies === undefined) {
     req.cookies = cookie.parse(req.headers.cookie ?? '');
   }
 
-  // Set cookie
+  // Set a cookie
   if (res.cookie === undefined) {
     res.cookie = (...args) => {
       res.setHeader(SET_COOKIE_HEADER, [
@@ -40,7 +44,7 @@ function applyCookie<T extends NextCookiePageResponse | NextCookieApiResponse>(
     };
   }
 
-  // Remove cookie
+  // Delete a cookie
   if (res.clearCookie === undefined) {
     res.clearCookie = (name, options = {}) => {
       res.setHeader(SET_COOKIE_HEADER, [
