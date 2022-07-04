@@ -4,6 +4,7 @@ import cookie from 'cookie';
 
 import type {NextCookiePageResponse, NextCookieApiResponse} from './types';
 
+declare function assertType<T>(value: unknown): asserts value is T;
 
 const SET_COOKIE_HEADER = 'Set-Cookie';
 
